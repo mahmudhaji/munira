@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Birthday Book</title>
+  <style>
+    body {
+      margin: 0;
+      background: #fff0f5;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .book {
+      width: 320px;
+      height: 480px;
+      perspective: 2000px;
+      position: relative;
+    }
+
+    .page {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      background: white;
+      border: 2px solid #ff69b4;
+      border-radius: 10px;
+      backface-visibility: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      transition: transform 1.5s ease-in-out;
+      padding: 20px;
+      box-sizing: border-box;
+      overflow: hidden;
+      text-align: center;
+      transform-style: preserve-3d;
+      transform-origin: left center;
+    }
+
+    .page img {
+      width: 180px;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-bottom: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+      transition: transform 0.5s ease;
+    }
+
+    .page h2 {
+      color: #d63384;
+      margin-bottom: 10px;
+      transition: transform 0.5s ease;
+    }
+
+    .page p {
+      transition: transform 0.5s ease;
+    }
+
+    .final-message {
+      font-size: 20px;
+      color: #ff1493;
+      text-align: center;
+      margin-bottom: 30px;
+      z-index: 1;
+    }
+
+    .celebrate-btn {
+      background-color: #ff69b4;
+      color: white;
+      font-size: 18px;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s;
+      z-index: 1;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .celebrate-btn:hover {
+      background-color: #ff1493;
+      transform: scale(1.05);
+    }
+
+    .confetti-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .heart, .sparkle {
+      position: absolute;
+      pointer-events: none;
+      opacity: 0.9;
+      animation: fall 4s linear forwards;
+    }
+
+    .heart {
+      width: 20px;
+      height: 20px;
+      background: pink;
+      clip-path: polygon(50% 0%, 100% 35%, 85% 100%, 50% 80%, 15% 100%, 0% 35%);
+    }
+
+    .sparkle {
+      width: 10px;
+      height: 10px;
+      background: radial-gradient(circle, gold 0%, orange 60%, transparent 100%);
+      border-radius: 50%;
+    }
+
+    @keyframes fall {
+      0% {
+        transform: translateY(-50px) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(500px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .intro-text {
+      font-size: 22px;
+      color: #ff1493;
+      line-height: 1.5;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Animation for page content */
+    .page.active img, 
+    .page.active h2, 
+    .page.active p {
+      animation: contentAppear 1s ease-out forwards;
+    }
+
+    @keyframes contentAppear {
+      0% {
+        opacity: 0;
+        transform: translateX(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    /* Book spine effect */
+    .page::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 5px;
+      height: 100%;
+      background: linear-gradient(to right, rgba(0,0,0,0.1), transparent);
+      z-index: 2;
+    }
+  </style>
+</head>
+<body>
+
+<div class="book" id="book">
+  <!-- Intro page -->
+  <div class="page" style="z-index: 6;">
+    <div class="intro-text">
+      <strong>🎂 HAPPY BIRTHDAY MERI DOSTU 💝</strong><br><br>
+      Here is your special book...
+    </div>
+  </div>
+
+  <div class="page" style="z-index: 5;">
+    <img src="img1.png" alt="Photo 1">
+    <h2>Our Moments 💖</h2>
+    <p>This was just the beginning of many memories together.</p>
+  </div>
+  <div class="page" style="z-index: 4;">
+    <img src="img2.png" alt="Photo 2">
+    <h2>Your Smile 😊</h2>
+    <p>It lights up my world more than words can say.</p>
+  </div>
+  <div class="page" style="z-index: 3;">
+    <img src="img3.png" alt="Photo 3">
+    <h2>The Laughs 🤭</h2>
+    <p>Every moment with you is filled with joy.</p>
+  </div>
+  <div class="page" style="z-index: 2;" id="last-page">
+    <h2 class="final-message">I Love You❤️<br>Happy Birthday!</h2>
+    <button class="celebrate-btn" onclick="celebrateHearts()">🎉 Celebrate 🎉</button>
+    <div class="confetti-container" id="confettiContainer"></div>
+  </div>
+</div>
+
+<script>
+  const pages = document.querySelectorAll('.page');
+  let currentPage = 0;
+  let isAnimating = false;
+
+  function flipPage() {
+    if (isAnimating || currentPage >= pages.length - 1) return;
+    
+    isAnimating = true;
+    const current = pages[currentPage];
+    const next = pages[currentPage + 1];
+    
+    // Add active class to next page for content animation
+    next.classList.add('active');
+    
+    // Flip current page
+    current.style.transform = "rotateY(-180deg)";
+    
+    // Bring next page to front
+    setTimeout(() => {
+      next.style.zIndex = pages.length + 1;
+      isAnimating = false;
+      currentPage++;
+      
+      // Auto-flip if not last page
+      if (currentPage < pages.length - 1) {
+        setTimeout(flipPage, 2500);
+      }
+    }, 1500);
+  }
+
+  function celebrateHearts() {
+    const container = document.getElementById("confettiContainer");
+    container.innerHTML = ''; // Clear previous confetti
+    
+    for (let i = 0; i < 100; i++) {
+      const shape = Math.random() < 0.5 ? 'heart' : 'sparkle';
+      const element = document.createElement('div');
+      element.classList.add(shape);
+      element.style.left = Math.random() * 100 + '%';
+      element.style.animationDuration = (2 + Math.random() * 3) + 's';
+      element.style.animationDelay = Math.random() * 0.5 + 's';
+      
+      // Random sizes
+      if (shape === 'heart') {
+        const size = 15 + Math.random() * 15;
+        element.style.width = size + 'px';
+        element.style.height = size + 'px';
+      } else {
+        const size = 5 + Math.random() * 10;
+        element.style.width = size + 'px';
+        element.style.height = size + 'px';
+      }
+      
+      container.appendChild(element);
+    }
+  }
+
+  // Start auto-flipping after intro
+  setTimeout(() => {
+    flipPage();
+  }, 2000);
+
+  // Optional: Allow manual clicking to flip pages
+  document.addEventListener('click', () => {
+    flipPage();
+  });
+</script>
+
+</body>
+</html>
